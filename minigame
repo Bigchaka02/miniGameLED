@@ -1,0 +1,119 @@
+from microbit import *
+import neopixel
+import music
+from random import randint
+
+led = neopixel.NeoPixel(pin1, 60)
+
+def color(c):
+    if c=="white":
+        return 255,255,255
+    r = 0
+    g = 0
+    b = 0
+    while c > 360:
+        c-=360
+    if 0<=c and c<60:
+        r = 255
+        g = int(255*c/60)
+        b = 0
+    if 60<=c and c<120:
+        r = int(255*(120-c)/60)
+        g = 255
+        b = 0
+    if 120<=c and c<180:
+        r = 0
+        g = 255
+        b = int(255*(c-120)/60)
+    if 180<=c and c<240:
+        r = 0
+        g = int(255*(240-c)/60)
+        b = 255
+    if 240<=c and c<300:
+        r = int(255*(c-240)/60)
+        g = 0
+        b = 255
+    if 300<=c and c<=360:
+        r = 255
+        g = 0
+        b = int(255*(360-c)/60)
+    return r, g, b
+adv=False
+score=0
+spot=30
+speed=7
+def rainbow():
+    for i in range(60):
+        led[i]=color(i*6)
+        led.show()
+        sleep(10)
+    for i in range(60):
+        led[i]=color(-1)
+        led.show()
+        sleep(10)
+def win():
+    global score
+    global spot
+    sleep(1000)
+    display.show(Image.HAPPY)
+    music.play(music.BA_DING)
+    score+=1
+    display.show(score)
+    rainbow()
+    spot=randint(2,47)
+def check(i):
+    if (i==spot):
+        win()
+    elif (i==spot-1 or i==spot+1) and adv:
+        led[i]=color(-1)
+        led[spot]=color("white")
+        led.show()
+        sleep(speed)
+        win()
+    else:
+        sleep(1000)
+        display.show(Image.SAD)
+        music.play(music.WAWAWAWAA)
+        sleep(10)
+        display.show(score)
+def status(i):
+    global score
+    global adv
+    if button_b.was_pressed():
+        check(i)
+    if button_a.was_pressed():
+        score=0
+        display.show(score)
+    if accelerometer.was_gesture("shake"):
+        if adv==True:
+            adv=False
+        else:
+            adv=True
+display.show(score)
+while True:
+    for i in range(59):
+        led[i]=color("white")
+        led.show()
+        sleep(speed)
+        status(i)
+        led[i]=color(-1)
+        led[i+1]=color("white")
+        led.show()
+        sleep(speed)
+        if adv:
+            led[spot]=color(4)
+        else:
+            led[spot]=color(0)
+    for i in range(1,60):
+        led[-i]=color("white")
+        led.show()
+        sleep(speed)
+        status(60-i)
+        led[-i]=color(-1)
+        led[-i-1]=color("white")
+        led.show()
+        sleep(speed)
+        if adv:
+            led[spot]=color(4)
+        else:
+            led[spot]=color(0)
